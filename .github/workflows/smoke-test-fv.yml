@@ -7,27 +7,26 @@ on:
 
 jobs:
   smoke-test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
       - name: Instalar agent-browser
+        shell: bash
         run: |
           npm install -g agent-browser
-          agent-browser install --with-deps
+          agent-browser install
 
       - name: Ejecutar smoke test
         id: smoke
+        shell: bash
         run: bash scripts/smoke_test_fv.sh
 
       - name: Enviar email con resultado
         if: always()
+        shell: bash
         env:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
@@ -35,10 +34,11 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
           STATUS: ${{ steps.smoke.outputs.status }}
-        run: python3 scripts/send_email.py
+        run: python scripts/send_email.py
 
       - name: Guardar evidencia en el repo
         if: always()
+        shell: bash
         run: |
           git config user.name "agenteconkosafe-bot"
           git config user.email "bot@conkomerco.com"
