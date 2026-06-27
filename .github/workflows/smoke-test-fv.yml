@@ -1,0 +1,47 @@
+name: Smoke Test - Farmacovigilancia Solton
+
+on:
+  schedule:
+    - cron: '0 13 1 * *'
+  workflow_dispatch: {}
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Instalar agent-browser
+        run: |
+          npm install -g agent-browser
+          agent-browser install --with-deps
+
+      - name: Ejecutar smoke test
+        id: smoke
+        run: bash scripts/smoke_test_fv.sh
+
+      - name: Enviar email con resultado
+        if: always()
+        env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
+          STATUS: ${{ steps.smoke.outputs.status }}
+        run: python3 scripts/send_email.py
+
+      - name: Guardar evidencia en el repo
+        if: always()
+        run: |
+          git config user.name "agenteconkosafe-bot"
+          git config user.email "bot@conkomerco.com"
+          git add evidencia/
+          git commit -m "Evidencia smoke test FV $(TZ='America/Lima' date +'%Y-%m-%d')" || echo "Sin cambios para commitear"
+          git push
