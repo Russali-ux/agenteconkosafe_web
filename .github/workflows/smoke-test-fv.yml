@@ -7,7 +7,7 @@ on:
 
 defaults:
   run:
-    shell: "C:\\Program Files\\Git\\bin\\bash.exe -e {0}"
+    shell: "\"C:\\Program Files\\Git\\bin\\bash.exe\" -e {0}"
 
 jobs:
   smoke-test:
