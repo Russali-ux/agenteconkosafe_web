@@ -22,8 +22,8 @@ jobs:
           npm install -g agent-browser
           agent-browser install
 
-      - name: Ejecutar smoke test
-        id: smoke
+      - name: Ejecutar Conkosafe test
+        id: ConkosafeIA test
         run: bash scripts/smoke_test_fv.sh
 
       - name: Enviar email con resultado
